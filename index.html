@@ -433,12 +433,12 @@
                             programs.forEach(p => {
                                 const pCol = getProjectHslColor(p.title);
                                 if (p.baseDate === dateStr) {
-                                    events.push({ t: 'D-Day', s: p.staffName, c: pCol, done: p.baseCompleted, rej: p.baseRejected, date: p.baseDate });
+                                    if (p.baseDate === dateStr) events.push({ t: 'D-Day', s: p.title, c: pCol, done: p.baseCompleted, rej: p.baseRejected });
                                 }
                                 (p.milestoneList || []).forEach(m => {
                                     if (m.date === dateStr) {
                                         const typeName = (m.name || "업무").split('(')[0];
-                                        events.push({ t: typeName, s: p.staffName, c: pCol, done: m.completed, rej: m.rejected, date: m.date });
+                                        events.push({ t: typeName, s: p.title, c: pCol, done: m.completed, rej: m.rejected });
                                     }
                                 });
                             });
