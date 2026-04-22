@@ -52,7 +52,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'dalgeurak-tims-v10'; // 버전 업그레이드
+        const appId = 'dalgeurak-tims-v11'; 
 
         // --- Icon Component ---
         const Icon = ({ name, className = "w-4 h-4" }) => {
@@ -67,22 +67,11 @@
             return <span ref={iconRef} className="inline-flex items-center justify-center"></span>;
         };
 
-        // --- 2024~2030 확장 공휴일 데이터 ---
+        // --- Holiday Data (2024~2030) ---
         const KR_HOLIDAYS_MAP = {
-            // 2024
             "2024-01-01": "신정", "2024-02-09": "설날", "2024-02-10": "설날", "2024-02-11": "설날", "2024-02-12": "대체공휴일", "2024-03-01": "삼일절", "2024-04-10": "선거일", "2024-05-01": "노동절", "2024-05-05": "어린이날", "2024-05-06": "대체공휴일", "2024-05-15": "부처님오신날", "2024-06-06": "현충일", "2024-08-15": "광복절", "2024-09-16": "추석", "2024-09-17": "추석", "2024-09-18": "추석", "2024-10-03": "개천절", "2024-10-09": "한글날", "2024-12-25": "성탄절",
-            // 2025
             "2025-01-01": "신정", "2025-01-28": "설날", "2025-01-29": "설날", "2025-01-30": "설날", "2025-03-01": "삼일절", "2025-03-03": "대체공휴일", "2025-05-01": "노동절", "2025-05-05": "어린이날", "2025-05-06": "부처님오신날", "2025-06-06": "현충일", "2025-08-15": "광복절", "2025-10-03": "개천절", "2025-10-05": "추석", "2025-10-06": "추석", "2025-10-07": "추석", "2025-10-08": "대체공휴일", "2025-10-09": "한글날", "2025-12-25": "성탄절",
-            // 2026
-            "2026-01-01": "신정", "2026-02-16": "설날", "2026-02-17": "설날", "2026-02-18": "설날", "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "노동절", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-24": "추석", "2026-09-25": "추석", "2026-09-26": "추석", "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
-            // 2027
-            "2027-01-01": "신정", "2027-02-06": "설날", "2027-02-07": "설날", "2027-02-08": "설날", "2027-02-09": "대체공휴일", "2027-03-01": "삼일절", "2027-05-01": "노동절", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-08-16": "대체공휴일", "2027-09-14": "추석", "2027-09-15": "추석", "2027-09-16": "추석", "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날", "2027-12-25": "성탄절",
-            // 2028
-            "2028-01-01": "신정", "2028-01-26": "설날", "2028-01-27": "설날", "2028-01-28": "설날", "2028-03-01": "삼일절", "2028-05-01": "노동절", "2028-05-02": "부처님오신날", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-02": "추석", "2028-10-03": "추석/개천절", "2028-10-04": "추석", "2028-10-05": "대체공휴일", "2028-10-09": "한글날", "2028-12-25": "성탄절",
-            // 2029
-            "2029-01-01": "신정", "2029-02-12": "설날", "2029-02-13": "설날", "2029-02-14": "설날", "2029-03-01": "삼일절", "2029-05-01": "노동절", "2029-05-05": "어린이날", "2029-05-07": "대체공휴일", "2029-05-20": "부처님오신날", "2029-05-21": "대체공휴일", "2029-06-06": "현충일", "2029-08-15": "광복절", "2029-09-21": "추석", "2029-09-22": "추석", "2029-09-23": "추석", "2029-09-24": "대체공휴일", "2029-10-03": "개천절", "2029-10-09": "한글날", "2029-12-25": "성탄절",
-            // 2030
-            "2030-01-01": "신정", "2030-02-02": "설날", "2030-02-03": "설날", "2030-02-04": "설날", "2030-02-05": "대체공휴일", "2030-03-01": "삼일절", "2030-05-01": "노동절", "2030-05-05": "어린이날", "2030-05-06": "대체공휴일", "2030-05-09": "부처님오신날", "2030-06-06": "현충일", "2030-08-15": "광복절", "2030-09-11": "추석", "2030-09-12": "추석", "2030-09-13": "추석", "2030-10-03": "개천절", "2030-10-09": "한글날", "2030-12-25": "성탄절"
+            "2026-01-01": "신정", "2026-02-16": "설날", "2026-02-17": "설날", "2026-02-18": "설날", "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "노동절", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-24": "추석", "2026-09-25": "추석", "2026-09-26": "추석", "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절"
         };
 
         const STATIC_STAFF_THEMES = {
@@ -97,9 +86,6 @@
         const DEFAULT_CATEGORIES = {
             PROGRAM: { label: "프로그램(사업)", milestones: [{ name: "계획서(기안서)", offset: -15, type: 'pre' }, { name: "평가서(결과보고서)", offset: 5, type: 'post' }] },
             COMMITTEE: { label: "위원회", milestones: [{ name: "회의자료", offset: -15, type: 'pre' }, { name: "위원장 미팅", offset: -3, type: 'pre' }, { name: "회의록", offset: 1, type: 'post' }, { name: "추진일정", offset: 1, type: 'post' }] },
-            INTERNAL: { label: "내부회의", milestones: [{ name: "회의자료", offset: -5, type: 'pre' }, { name: "회의록", offset: 1, type: 'post' }] },
-            EXTERNAL: { label: "외부행사(장기사업)", milestones: [{ name: "계획서(기안서)", offset: -30, type: 'pre' }, { name: "평가서(결과보고서)", offset: 5, type: 'post' }] },
-            REFLECTION: { label: "성찰글", milestones: [] },
             ETC: { label: "기타", milestones: [] }
         };
 
@@ -143,7 +129,7 @@
             return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(description)}`;
         };
 
-        // --- Login Screen ---
+        // --- Auth Components ---
         function LoginScreen({ onLogin, staffList, fbUser, db, appId }) {
             const [isJoin, setIsJoin] = useState(false);
             const [accountType, setAccountType] = useState('staff');
@@ -186,8 +172,8 @@
                     <form onSubmit={handleAuth} className="bg-white w-full max-w-md rounded-[2.5rem] p-10 space-y-6 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="text-center">
                             <div className="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-xl mb-4"><Icon name="Lock" className="text-white w-8 h-8" /></div>
-                            <h2 className="text-2xl font-black tracking-tight text-slate-800">청소년자치연구소</h2>
-                            <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest">{isJoin ? '실무진 비밀번호 설정' : '업무관리 시스템 로그인'}</p>
+                            <h2 className="text-2xl font-black tracking-tight text-slate-800">업무관리 시스템</h2>
+                            <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest">{isJoin ? '실무진 비밀번호 설정' : 'LOGIN'}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl font-bold">
                             <button type="button" onClick={() => { setAccountType('staff'); setError(''); }} className={`py-2.5 rounded-xl text-xs transition-all ${accountType === 'staff' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500'}`}>실무자</button>
@@ -196,7 +182,7 @@
                         {accountType === 'staff' ? (
                             <div className="space-y-1"><label className="text-[9px] font-black text-slate-400 ml-1 uppercase">이름 선택</label><select className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={name} onChange={e => setName(e.target.value)}>{staffList.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
                         ) : (
-                            <div className="space-y-1"><label className="text-[9px] font-black text-slate-400 ml-1 uppercase">관리자 계정</label><input disabled className="w-full p-4 bg-slate-100 border rounded-2xl font-bold text-slate-400" value={adminCreds.id} /></div>
+                            <div className="space-y-1"><label className="text-[9px] font-black text-slate-400 ml-1 uppercase">관리자 ID</label><input disabled className="w-full p-4 bg-slate-100 border rounded-2xl font-bold text-slate-400" value={adminCreds.id} /></div>
                         )}
                         <div className="space-y-1"><label className="text-[9px] font-black text-slate-400 ml-1 uppercase">비밀번호</label><input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={pw} onChange={e => setPw(e.target.value)} required /></div>
                         {error && <p className="text-red-500 text-xs text-center font-bold animate-pulse">{error}</p>}
@@ -218,13 +204,13 @@
             const canEdit = currentUser.isAdmin || prog.creatorId === currentUser.id;
 
             return (
-                <div style={{ borderColor: theme.border }} className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-                    <div style={{ backgroundColor: theme.bg }} className="px-5 py-3.5 border-b flex justify-between items-center font-bold">
+                <div style={{ borderColor: theme.border }} className="bg-white rounded-2xl border-2 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 font-bold">
+                    <div style={{ backgroundColor: theme.bg }} className="px-5 py-3.5 border-b flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div style={{ backgroundColor: theme.accent }} className="text-white px-3 py-1 rounded-xl text-[10px] font-black shadow-sm uppercase">{prog.staffName}</div>
                             <h4 className="font-bold text-slate-800 tracking-tight text-base">{prog.title}</h4>
                         </div>
-                        {canEdit && <button onClick={() => onDelete(prog.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1"><Icon name="Trash2" /></button>}
+                        {canEdit && <button onClick={() => onDelete(prog)} className="text-slate-300 hover:text-red-500 transition-colors p-1"><Icon name="Trash2" className="w-5 h-5" /></button>}
                     </div>
                     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                         {sortedItems.map((item, i) => {
@@ -241,7 +227,7 @@
                                     </div>
                                     <div className="text-lg font-black leading-none mb-3 tracking-tighter">{formatFullDate(item.date)}</div>
                                     <div className="flex items-center justify-between mt-auto pt-2 border-t border-black/5 gap-2">
-                                        <div className="flex items-center gap-3 font-bold">
+                                        <div className="flex items-center gap-3">
                                             <label className={`flex items-center gap-1.5 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'} group`}>
                                                 <input type="checkbox" className="hidden" disabled={!canEdit} checked={item.completed || false} onChange={() => {
                                                     const up = { ...prog };
@@ -267,74 +253,10 @@
                                                 <span className={`text-[9px] font-black ${item.rejected ? 'text-red-600' : highlighted ? 'text-white/80' : 'text-slate-500'}`}>반려</span>
                                             </label>
                                         </div>
-                                        <button onClick={() => window.open(getGoogleCalendarUrl(`[${item.name}] ${prog.title}`, item.date, `담당자: ${prog.staffName}\n사업명: ${prog.title}`), '_blank')} title="구글 캘린더 등록" className={`p-1 rounded transition-colors ${highlighted ? 'text-white/70 hover:text-white' : 'text-slate-300 hover:text-blue-500'}`}>
+                                        <button onClick={() => window.open(getGoogleCalendarUrl(`[${item.name}] ${prog.title}`, item.date, `담당자: ${prog.staffName}`), '_blank')} title="구글 캘린더 등록" className={`p-1 rounded transition-colors ${highlighted ? 'text-white/70 hover:text-white' : 'text-slate-300 hover:text-blue-500'}`}>
                                             <Icon name="Calendar" className="w-4 h-4" />
                                         </button>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        }
-
-        // --- Calendar View Component ---
-        function CalendarView({ programs }) {
-            const [cur, setCur] = useState(new Date());
-            const year = cur.getFullYear(), month = cur.getMonth();
-            const days = [...Array(new Date(year, month, 1).getDay()).fill(null), ...Array.from({length: new Date(year, month + 1, 0).getDate()}, (_, i) => i + 1)];
-            const todayStr = getTodayStr();
-            
-            return (
-                <div className="bg-white rounded-[2rem] shadow-sm border overflow-hidden">
-                    <div className="p-5 bg-slate-900 text-white flex justify-between items-center">
-                        <button onClick={() => setCur(new Date(year, month - 1))} className="p-1.5 hover:bg-white/10 rounded transition-colors"><Icon name="ChevronLeft" /></button>
-                        <h2 className="font-bold tracking-tight text-lg">{year}년 {month + 1}월</h2>
-                        <button onClick={() => setCur(new Date(year, month + 1))} className="p-1.5 hover:bg-white/10 rounded transition-colors"><Icon name="ChevronRight" /></button>
-                    </div>
-                    <div className="grid grid-cols-7 text-[10px] font-black text-center py-3 bg-slate-50 border-b uppercase tracking-widest text-slate-400">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=><div key={d}>{d}</div>)}</div>
-                    <div className="grid grid-cols-7">
-                        {days.map((d, i) => {
-                            const dateStr = d ? `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` : null;
-                            const holiday = KR_HOLIDAYS_MAP[dateStr];
-                            const isToday = dateStr === todayStr;
-                            const events = [];
-                            
-                            programs.forEach(p => {
-                                const pCol = getProjectHslColor(p.title);
-                                if (p.baseDate === dateStr) {
-                                    events.push({ t: 'D-Day', s: p.staffName, c: pCol, done: p.baseCompleted, rej: p.baseRejected, date: p.baseDate });
-                                }
-                                (p.milestoneList || []).forEach(m => {
-                                    if (m.date === dateStr) {
-                                        const typeName = (m.name || "업무").split('(')[0];
-                                        events.push({ t: typeName, s: p.staffName, c: pCol, done: m.completed, rej: m.rejected, date: m.date });
-                                    }
-                                });
-                            });
-
-                            return (
-                                <div key={i} className={`border-r border-b p-1.5 min-h-[120px] overflow-y-auto relative ${d ? (holiday || i%7===0 || i%7===1 ? 'bg-red-50/20' : 'bg-white') : 'bg-slate-50/10'} ${isToday ? 'ring-2 ring-red-500 ring-inset z-10' : ''}`}>
-                                    {d && (
-                                        <>
-                                            <div className="flex justify-between items-start text-[11px] font-bold mb-1.5">
-                                                <span className={i%7===0 || holiday ? 'text-red-600' : i%7===1 ? 'text-slate-400' : i%7===6 ? 'text-blue-500' : ''}>{d}</span>
-                                                {holiday && <span className="text-[7px] text-red-500 bg-red-100 px-1 rounded font-black leading-none">{holiday}</span>}
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                {events.map((ev, ei) => {
-                                                    const overdue = ev.date < todayStr && !ev.done;
-                                                    const bgColor = ev.done ? '#f1f5f9' : ev.rej ? '#ef4444' : ev.c;
-                                                    return (
-                                                        <div key={ei} style={{ backgroundColor: bgColor, color: ev.done ? '#94a3b8' : 'white' }} className={`text-[7px] p-1 rounded font-black truncate leading-tight border border-black/5 shadow-sm ${ev.done ? 'line-through opacity-70' : ''} ${overdue ? 'ring-1 ring-red-500 animate-pulse' : ''}`}>
-                                                            [{ev.t}] {ev.s}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </>
-                                    )}
                                 </div>
                             );
                         })}
@@ -350,6 +272,7 @@
             const [programs, setPrograms] = useState([]);
             const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
             const [staffList, setStaffList] = useState(INITIAL_STAFF);
+            const [activityLogs, setActivityLogs] = useState([]);
             const [viewMode, setViewMode] = useState('list');
             const [isLoading, setIsLoading] = useState(true);
             const [filterStaff, setFilterStaff] = useState('전체');
@@ -378,6 +301,9 @@
                     setPrograms(snap.docs.map(d => ({ id: d.id, ...d.data() })));
                     setIsLoading(false);
                 });
+                onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'logs')), (snap) => {
+                    setActivityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+                });
             }, [user]);
 
             useEffect(() => { if (currentUser && currentUser.id !== 'admin') setForm(p => ({ ...p, staffName: currentUser.name })); }, [currentUser]);
@@ -393,50 +319,27 @@
                 return res.sort((a, b) => sortType === 'baseDate' ? new Date(a.baseDate) - new Date(b.baseDate) : new Date(a.earliestDate) - new Date(b.earliestDate));
             }, [programs, filterStaff, sortType]);
 
-            const handleExportExcel = (isMonthly = false) => {
-                let dataToExport = sortedPrograms;
-                if (isMonthly) {
-                    const monthKey = new Date().toISOString().slice(0, 7);
-                    dataToExport = sortedPrograms.filter(p => p.baseDate.startsWith(monthKey));
-                }
-                const headers = ["담당자", "사업명", "구분", "일정명", "날짜", "상태"];
-                const rows = dataToExport.flatMap(p => {
-                    const base = [p.staffName, p.title, categories[p.categoryKey]?.label || "기타", "기준일(D-Day)", p.baseDate, p.baseCompleted ? "완료" : "진행중"];
-                    const miles = (p.milestoneList || []).map(m => [p.staffName, p.title, categories[p.categoryKey]?.label || "기타", m.name, m.date, m.completed ? "완료" : "진행중"]);
-                    return [base, ...miles];
+            const logActivity = async (type, detail, data = null) => {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'logs'), {
+                    type, detail, performer: currentUser.name, timestamp: new Date().toISOString(), data
                 });
-                const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-                link.download = `업무일정_${isMonthly ? '이번달' : '전체'}.csv`; link.click();
             };
 
-            const handleExportWord = (isMonthly = false) => {
-                let dataToExport = sortedPrograms;
-                if (isMonthly) {
-                    const monthKey = new Date().toISOString().slice(0, 7);
-                    dataToExport = sortedPrograms.filter(p => p.baseDate.startsWith(monthKey));
+            const handleDeleteTask = async (task) => {
+                if(confirm(`[${task.title}] 일정을 정말 삭제하시겠습니까?`)){
+                    await logActivity('DELETE', `[${task.title}] 업무 삭제`, task);
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', task.id));
                 }
-                let docText = `청소년자치연구소 업무보고서 (${isMonthly ? '이번 달' : '전체'})\n\n`;
-                dataToExport.forEach((p, idx) => {
-                    docText += `${idx+1}. ${p.title} (${p.staffName})\n`;
-                    docText += `   - 기준일: ${p.baseDate} [${p.baseCompleted ? '완료' : '진행'}]\n`;
-                    (p.milestoneList || []).forEach(m => { docText += `   - ${m.name}: ${m.date} [${m.completed ? '완료' : '진행'}]\n`; });
-                    docText += `\n`;
-                });
-                const blob = new Blob([docText], { type: 'application/msword' });
-                const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-                link.download = `업무보고서_${isMonthly ? '이번달' : '전체'}.doc`; link.click();
             };
 
             if (!currentUser) return <LoginScreen onLogin={setCurrentUser} staffList={staffList} fbUser={user} db={db} appId={appId} />;
 
             return (
-                <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 selection:bg-blue-100">
+                <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 selection:bg-blue-100 font-bold">
                     <header className="bg-white border-b p-4 sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md"><Icon name="CheckSquare" /></div>
-                            <div><h1 className="font-bold text-lg uppercase leading-none">DALGEURAK TIMS</h1><p className="text-[10px] text-blue-600 font-black mt-1 uppercase tracking-widest">{currentUser.name} 접속 중</p></div>
+                            <div className="bg-blue-600 p-2 rounded-xl text-white shadow-md font-black"><Icon name="CheckSquare" /></div>
+                            <div><h1 className="font-black text-lg uppercase leading-none">DALGEURAK TIMS</h1><p className="text-[10px] text-blue-600 font-black mt-1 uppercase tracking-widest">{currentUser.name} 접속 중</p></div>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="flex bg-slate-100 rounded-xl p-1 border">
@@ -448,7 +351,7 @@
                         </div>
                     </header>
                     <main className="max-w-6xl mx-auto p-4 md:p-6">
-                        <section className="bg-white p-6 rounded-2xl shadow-sm border mb-8 font-bold">
+                        <section className="bg-white p-6 rounded-2xl shadow-sm border mb-8">
                             <h2 className="text-lg font-bold mb-5 flex items-center gap-2 text-slate-800 uppercase tracking-tight"><Icon name="Plus" className="text-blue-600" /> 신규 일정 등록</h2>
                             <form onSubmit={async (e) => {
                                 e.preventDefault();
@@ -459,30 +362,30 @@
                                     return { name: m.name, date: adjustDate(target, m.type), completed: false, rejected: false };
                                 });
                                 const earliestDate = new Date(Math.min(base, ...milestoneList.map(m => new Date(m.date)))).toISOString();
-                                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'programs'), {
+                                const taskData = {
                                     ...form, staffName: currentUser.isAdmin ? (form.staffName || "관리자") : currentUser.name, milestoneList, earliestDate,
                                     baseCompleted: false, baseRejected: false, createdAt: new Date().toISOString(), creatorId: currentUser.id
-                                });
+                                };
+                                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'programs'), taskData);
+                                await logActivity('CREATE', `[${form.title}] 업무 신규 등록`, taskData);
                                 setForm(p => ({ ...p, title: '', baseDate: '' }));
                             }} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end text-xs">
                                 <div className="md:col-span-2 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase">구분</label><select className="w-full p-2.5 border rounded-xl bg-slate-50 outline-none" value={form.categoryKey} onChange={e => setForm({...form, categoryKey: e.target.value})}>{Object.entries(categories).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
-                                <div className="md:col-span-5 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase">업무명</label><input className="w-full p-2.5 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-blue-100" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="사업명 입력" required /></div>
-                                <div className="md:col-span-3 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase font-black">기준일(D-Day)</label><input type="date" className="w-full p-2.5 border rounded-xl bg-slate-50 outline-none" value={form.baseDate} onChange={e => setForm({...form, baseDate: e.target.value})} required /></div>
-                                {currentUser.isAdmin && <div className="md:col-span-2 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase font-black">담당자</label><select className="w-full p-2.5 border rounded-xl outline-none font-black" value={form.staffName} onChange={e => setForm({...form, staffName: e.target.value})}>{staffList.map(s => <option key={s} value={s}>{s}</option>)}</select></div>}
-                                <div className="md:col-span-12 mt-2 font-black"><button className="w-full bg-blue-600 text-white py-3.5 rounded-xl hover:bg-blue-700 shadow-lg active:scale-[0.98]">일정 등록 완료</button></div>
+                                <div className="md:col-span-5 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase">업무명</label><input className="w-full p-2.5 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-blue-100 font-bold" value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="사업명 입력" required /></div>
+                                <div className="md:col-span-3 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase font-black">기준일(D-Day)</label><input type="date" className="w-full p-2.5 border rounded-xl bg-slate-50 outline-none font-bold" value={form.baseDate} onChange={e => setForm({...form, baseDate: e.target.value})} required /></div>
+                                {currentUser.isAdmin && <div className="md:col-span-2 space-y-1"><label className="text-[9px] text-slate-400 ml-1 uppercase font-black">담당자</label><select className="w-full p-2.5 border rounded-xl outline-none font-bold" value={form.staffName} onChange={e => setForm({...form, staffName: e.target.value})}>{staffList.map(s => <option key={s} value={s}>{s}</option>)}</select></div>}
+                                <div className="md:col-span-12 mt-2"><button className="w-full bg-blue-600 text-white py-3.5 rounded-xl hover:bg-blue-700 font-black shadow-lg active:scale-[0.98]">일정 등록 완료</button></div>
                             </form>
                         </section>
-                        <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
-                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide font-bold">{["전체", ...staffList].map(s => <button key={s} onClick={() => setFilterStaff(s)} className={`px-4 py-2 rounded-xl text-[11px] font-black border whitespace-nowrap shadow-sm ${filterStaff === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-500'}`}>{s}</button>)}</div>
+                        <div className="mb-6 flex flex-col md:flex-row justify-between gap-4 font-bold">
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">{["전체", ...staffList].map(s => <button key={s} onClick={() => setFilterStaff(s)} className={`px-4 py-2 rounded-xl text-[11px] font-black border whitespace-nowrap shadow-sm ${filterStaff === s ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-500'}`}>{s}</button>)}</div>
                             <div className="flex items-center gap-2">
                                 <div className="relative" ref={exportMenuRef}>
                                     <button onClick={() => setIsExportOpen(!isExportOpen)} className="bg-white border text-slate-700 px-4 py-2 rounded-xl text-[11px] font-black flex items-center gap-2 hover:bg-slate-50 transition shadow-sm"><Icon name="Download" /> 내보내기</button>
                                     {isExportOpen && (
                                         <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-2xl border p-2 z-[60] text-[11px] font-bold animate-in zoom-in-95">
                                             <button onClick={() => handleExportExcel(false)} className="w-full text-left p-2.5 hover:bg-emerald-50 rounded-xl flex items-center gap-2 font-black transition-colors"><Icon name="FileSpreadsheet" className="text-emerald-600" /> 전체 (Excel)</button>
-                                            <button onClick={() => handleExportExcel(true)} className="w-full text-left p-2.5 hover:bg-emerald-50 rounded-xl border-b font-black transition-colors"><Icon name="FileSpreadsheet" className="text-emerald-600" /> 이번달 (Excel)</button>
-                                            <button onClick={() => handleExportWord(false)} className="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl flex items-center gap-2 font-black transition-colors"><Icon name="FileText" className="text-blue-600" /> 전체 (Word)</button>
-                                            <button onClick={() => handleExportWord(true)} className="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl font-black transition-colors"><Icon name="FileText" className="text-blue-600" /> 이번달 (Word)</button>
+                                            <button onClick={() => handleExportWord(false)} className="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl flex items-center gap-2 font-black transition-colors"><Icon name="FileText" className="text-blue-500" /> 전체 (Word)</button>
                                         </div>
                                     )}
                                 </div>
@@ -492,22 +395,86 @@
                                 </div>
                             </div>
                         </div>
-                        {isLoading ? <div className="flex justify-center py-20 animate-pulse text-slate-300 font-black tracking-widest uppercase">Syncing...</div> : 
+                        {isLoading ? <div className="py-40 text-center animate-pulse text-slate-300 font-black">SYNCING DATA...</div> : 
                             viewMode === 'list' ? (
                                 <div className="space-y-4">
-                                    {sortedPrograms.map(p => <TaskCard key={p.id} prog={p} currentUser={currentUser} sortType={sortType} onUpdateStatus={(id, up) => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', id), up)} onDelete={async (id) => {if(confirm('정말 삭제하시겠습니까?')){await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', id));}}} />)}
+                                    {sortedPrograms.map(p => <TaskCard key={p.id} prog={p} currentUser={currentUser} sortType={sortType} onUpdateStatus={(id, up) => updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', id), up)} onDelete={handleDeleteTask} />)}
                                 </div>
                             ) : <CalendarView programs={sortedPrograms} />
                         }
                     </main>
-                    {isAdminOpen && <AdminSettingsModal categories={categories} staffList={staffList} db={db} appId={appId} onClose={() => setIsAdminOpen(false)} />}
+                    {isAdminOpen && <AdminSettingsModal categories={categories} staffList={staffList} logs={activityLogs} db={db} appId={appId} onClose={() => setIsAdminOpen(false)} />}
                 </div>
             );
         }
 
-        // --- Admin Settings Component ---
-        function AdminSettingsModal({ staffList, onClose, categories, db, appId }) {
-            const [activeTab, setActiveTab] = useState('categories');
+        // --- Calendar View Component ---
+        function CalendarView({ programs }) {
+            const [cur, setCur] = useState(new Date());
+            const year = cur.getFullYear(), month = cur.getMonth();
+            const days = [...Array(new Date(year, month, 1).getDay()).fill(null), ...Array.from({length: new Date(year, month + 1, 0).getDate()}, (_, i) => i + 1)];
+            const todayStr = getTodayStr();
+            
+            return (
+                <div className="bg-white rounded-[2rem] shadow-sm border overflow-hidden font-bold">
+                    <div className="p-5 bg-slate-900 text-white flex justify-between items-center">
+                        <button onClick={() => setCur(new Date(year, month - 1))} className="p-1.5 hover:bg-white/10 rounded transition-colors"><Icon name="ChevronLeft" /></button>
+                        <h2 className="font-bold tracking-tight text-lg">{year}년 {month + 1}월</h2>
+                        <button onClick={() => setCur(new Date(year, month + 1))} className="p-1.5 hover:bg-white/10 rounded transition-colors"><Icon name="ChevronRight" /></button>
+                    </div>
+                    <div className="grid grid-cols-7 text-[10px] font-black text-center py-3 bg-slate-50 border-b uppercase tracking-widest text-slate-400">{['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=><div key={d}>{d}</div>)}</div>
+                    <div className="grid grid-cols-7">
+                        {days.map((d, i) => {
+                            const dateStr = d ? `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` : null;
+                            const holiday = KR_HOLIDAYS_MAP[dateStr];
+                            const isToday = dateStr === todayStr;
+                            const events = [];
+                            
+                            programs.forEach(p => {
+                                const pCol = getProjectHslColor(p.title);
+                                if (p.baseDate === dateStr) {
+                                    events.push({ t: 'D-Day', s: p.staffName, c: pCol, done: p.baseCompleted, rej: p.baseRejected, date: p.baseDate });
+                                }
+                                (p.milestoneList || []).forEach(m => {
+                                    if (m.date === dateStr) {
+                                        const typeName = (m.name || "업무").split('(')[0];
+                                        events.push({ t: typeName, s: p.staffName, c: pCol, done: m.completed, rej: m.rejected, date: m.date });
+                                    }
+                                });
+                            });
+
+                            return (
+                                <div key={i} className={`border-r border-b p-1.5 min-h-[110px] overflow-y-auto relative ${d ? (holiday || i%7===0 || i%7===1 ? 'bg-red-50/20' : 'bg-white') : 'bg-slate-50/10'} ${isToday ? 'ring-2 ring-red-500 ring-inset z-10' : ''}`}>
+                                    {d && (
+                                        <>
+                                            <div className="flex justify-between items-start text-[11px] font-bold mb-1.5">
+                                                <span className={i%7===0 || holiday ? 'text-red-600' : i%7===1 ? 'text-slate-400' : i%7===6 ? 'text-blue-500' : ''}>{d}</span>
+                                                {holiday && <span className="text-[7px] text-red-500 bg-red-100 px-1 rounded font-black leading-none">{holiday}</span>}
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {events.map((ev, ei) => {
+                                                    const overdue = ev.date < todayStr && !ev.done;
+                                                    const bgColor = ev.done ? '#e2e8f0' : ev.rej ? '#ef4444' : ev.c;
+                                                    return (
+                                                        <div key={ei} style={{ backgroundColor: bgColor, color: ev.done ? '#94a3b8' : 'white' }} className={`text-[7px] p-1 rounded font-black truncate leading-tight border border-black/5 shadow-sm ${ev.done ? 'line-through opacity-70' : ''} ${overdue ? 'ring-1 ring-red-500 animate-pulse' : ''}`}>
+                                                            [{ev.t}] {ev.s}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // --- Admin Modal Component ---
+        function AdminSettingsModal({ staffList, onClose, categories, logs, db, appId }) {
+            const [activeTab, setActiveTab] = useState('logs');
             const [catData, setCatData] = useState(JSON.parse(JSON.stringify(categories)));
             const [staffData, setStaffData] = useState([...staffList]);
             const [newS, setNewS] = useState('');
@@ -524,36 +491,78 @@
             }, []);
 
             const saveAll = async () => {
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'categories'), { data: catData });
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'staff'), { list: staffData });
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin'), adminCreds);
-                onClose();
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'categories'), { data: catData });
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'staff'), { list: staffData });
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin'), adminCreds);
+                    alert('모든 설정이 저장 및 반영되었습니다.');
+                    onClose();
+                } catch(e) {
+                    console.error(e);
+                    alert('저장 중 오류가 발생했습니다.');
+                }
+            };
+
+            const handleRestore = async (log) => {
+                if(!log.data) return;
+                try {
+                    const { id, ...originalData } = log.data;
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'programs'), originalData);
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'logs'), {
+                        type: 'RESTORE', detail: `[${originalData.title}] 복구 완료`, performer: '시스템(관리자)', timestamp: new Date().toISOString()
+                    });
+                    alert('복구가 완료되었습니다.');
+                } catch(e) { alert('복구 실패: ' + e.message); }
             };
 
             return (
                 <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-[300] animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
-                        <div className="p-6 border-b flex justify-between items-center bg-slate-50 font-bold">
-                            <h3 className="font-black text-xl tracking-tight text-slate-800 uppercase tracking-widest">관리자 모드</h3>
+                    <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden font-bold">
+                        <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                            <h3 className="font-black text-xl tracking-tight text-slate-800 uppercase tracking-widest">관리자 설정 모드</h3>
                             <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><Icon name="X" /></button>
                         </div>
-                        <div className="flex border-b bg-white px-6 font-bold">
-                            <button onClick={() => setActiveTab('categories')} className={`py-4 px-6 text-sm transition-all border-b-4 ${activeTab === 'categories' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>업무 구분 관리</button>
-                            <button onClick={() => setActiveTab('staff')} className={`py-4 px-6 text-sm transition-all border-b-4 ${activeTab === 'staff' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>실무자 계정 관리</button>
-                            <button onClick={() => setActiveTab('admin')} className={`py-4 px-6 text-sm transition-all border-b-4 ${activeTab === 'admin' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>보안 설정</button>
+                        <div className="flex border-b bg-white px-6 font-bold overflow-x-auto scrollbar-hide">
+                            <button onClick={() => setActiveTab('logs')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'logs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>작업 기록 (타임라인)</button>
+                            <button onClick={() => setActiveTab('categories')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'categories' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>업무 구분 관리</button>
+                            <button onClick={() => setActiveTab('staff')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'staff' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>실무자 계정 관리</button>
+                            <button onClick={() => setActiveTab('admin')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'admin' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>보안 설정</button>
                         </div>
-                        <div className="p-8 overflow-y-auto space-y-6 font-bold">
+                        <div className="p-8 overflow-y-auto space-y-6">
+                            {activeTab === 'logs' && (
+                                <div className="space-y-4">
+                                    <h4 className="text-xs text-slate-400 uppercase font-black">최근 작업 내역 (복구 가능)</h4>
+                                    <div className="grid grid-cols-1 gap-2 font-bold">
+                                        {logs.map(log => (
+                                            <div key={log.id} className={`flex items-center justify-between p-4 rounded-2xl border ${log.type === 'DELETE' ? 'bg-red-50 border-red-100' : log.type === 'CREATE' ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-2 rounded-xl text-white ${log.type === 'DELETE' ? 'bg-red-500' : log.type === 'RESTORE' ? 'bg-blue-500' : 'bg-emerald-500'}`}>
+                                                        <Icon name={log.type === 'DELETE' ? 'Trash2' : log.type === 'CREATE' ? 'Plus' : 'History'} className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-slate-800">{log.detail}</p>
+                                                        <p className="text-[10px] text-slate-400">{log.performer} • {new Date(log.timestamp).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                {log.type === 'DELETE' && (
+                                                    <button onClick={() => handleRestore(log)} className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-black hover:bg-blue-700 shadow-md transition-all active:scale-95">복구하기</button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             {activeTab === 'categories' && (
                                 <div className="space-y-4">
                                     {Object.entries(catData).map(([key, cat]) => (
-                                        <div key={key} className="p-4 bg-slate-50 rounded-2xl border space-y-3">
+                                        <div key={key} className="p-4 bg-slate-50 rounded-2xl border space-y-3 font-bold">
                                             <div className="flex gap-2">
                                                 <input className="flex-1 p-2 bg-white border rounded-xl font-bold" value={cat.label} onChange={e => { const d = {...catData}; d[key].label = e.target.value; setCatData(d); }} />
                                                 <button onClick={() => { const d = {...catData}; delete d[key]; setCatData(d); }} className="p-2 text-red-500 bg-white border rounded-xl"><Icon name="Trash" /></button>
                                             </div>
                                             <div className="pl-4 border-l-2 border-slate-200 space-y-2">
-                                                {cat.milestones.map((m, idx) => (
-                                                    <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-xs">
+                                                {(cat.milestones || []).map((m, idx) => (
+                                                    <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl shadow-xs font-bold">
                                                         <input className="flex-1 text-xs font-bold border-none" value={m.name} onChange={e => { const d = {...catData}; d[key].milestones[idx].name = e.target.value; setCatData(d); }} />
                                                         <div className="flex items-center bg-slate-100 p-1 rounded-lg">
                                                             <span className="text-[9px] px-1 font-black">D</span>
@@ -562,7 +571,7 @@
                                                         <button onClick={() => { const d = {...catData}; d[key].milestones.splice(idx,1); setCatData(d); }}><Icon name="X" className="w-3 h-3 text-slate-300" /></button>
                                                     </div>
                                                 ))}
-                                                <button onClick={() => { const d = {...catData}; d[key].milestones.push({name:'새 유형', offset:-7, type:'pre'}); setCatData(d); }} className="text-[10px] font-black text-blue-600 underline">+ 추가</button>
+                                                <button onClick={() => { const d = {...catData}; if(!d[key].milestones) d[key].milestones = []; d[key].milestones.push({name:'새 유형', offset:-7, type:'pre'}); setCatData(d); }} className="text-[10px] font-black text-blue-600 underline">+ 추가</button>
                                             </div>
                                         </div>
                                     ))}
@@ -570,16 +579,16 @@
                                 </div>
                             )}
                             {activeTab === 'staff' && (
-                                <div className="space-y-4 font-bold">
-                                    <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border shadow-inner mb-6">
+                                <div className="space-y-4">
+                                    <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border shadow-inner mb-6 font-bold">
                                         <input className="flex-1 p-3 bg-transparent font-bold text-sm outline-none" placeholder="실무자 이름 입력" value={newS} onChange={e=>setNewS(e.target.value)} />
                                         <button onClick={() => { if(!newS) return; setStaffData([...staffData, newS]); setNewS(''); }} className="bg-blue-600 text-white px-6 rounded-xl font-bold text-sm">추가</button>
                                     </div>
-                                    <div className="grid grid-cols-1 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 font-bold">
                                         {staffData.map(s => (
-                                            <div key={s} className="flex justify-between items-center p-4 bg-white border rounded-2xl shadow-sm group font-bold">
+                                            <div key={s} className="flex justify-between items-center p-4 bg-white border rounded-2xl shadow-sm group">
                                                 <div className="flex flex-col"><span className="font-black text-slate-800 text-base">{s}</span><span className="text-[10px] font-bold text-blue-600 bg-blue-50 w-fit px-1.5 rounded mt-1 uppercase tracking-tighter">PASSWORD: {pws[s] || '미등록'}</span></div>
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={async () => {if(confirm('비밀번호를 초기화할까요?')) {await updateDoc(doc(db,'artifacts',appId,'public', 'data', 'users', s), {password:deleteField()}); setPws({...pws, [s]:null});}}} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="초기화"><Icon name="RefreshCcw" /></button><button onClick={() => setStaffData(staffData.filter(x=>x!==s))} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl" title="삭제"><Icon name="Trash" /></button></div>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity font-bold"><button onClick={async () => {if(confirm('비밀번호를 초기화할까요?')) {await updateDoc(doc(db,'artifacts',appId,'public', 'data', 'users', s), {password:deleteField()}); setPws({...pws, [s]:null});}}} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl"><Icon name="RefreshCcw" /></button><button onClick={() => setStaffData(staffData.filter(x=>x!==s))} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl"><Icon name="Trash" /></button></div>
                                             </div>
                                         ))}
                                     </div>
@@ -587,15 +596,15 @@
                             )}
                             {activeTab === 'admin' && (
                                 <div className="space-y-6 max-w-sm mx-auto py-10 font-bold">
-                                    <div className="space-y-2 font-bold"><label className="text-xs text-slate-400 font-bold uppercase tracking-widest">관리자 ID</label><input className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={adminCreds.id} onChange={e => setAdminCreds({...adminCreds, id: e.target.value})} /></div>
-                                    <div className="space-y-2 font-bold"><label className="text-xs text-slate-400 font-bold uppercase tracking-widest">관리자 PASSWORD</label><input type="password" className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={adminCreds.pw} onChange={e => setAdminCreds({...adminCreds, pw: e.target.value})} /></div>
-                                    <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-[11px] text-amber-700 leading-relaxed font-bold"><Icon name="AlertTriangle" className="inline w-3 h-3 mr-1" /> 관리자 정보를 변경하면 다음 로그인부터는 새로운 정보로 접속해야 합니다. 정보를 분실하지 않도록 주의하세요!</div>
+                                    <div className="space-y-2"><label className="text-xs text-slate-400 font-bold uppercase tracking-widest">관리자 ID</label><input className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={adminCreds.id} onChange={e => setAdminCreds({...adminCreds, id: e.target.value})} /></div>
+                                    <div className="space-y-2"><label className="text-xs text-slate-400 font-bold uppercase tracking-widest">관리자 PASSWORD</label><input type="password" className="w-full p-4 bg-slate-50 border rounded-2xl font-bold" value={adminCreds.pw} onChange={e => setAdminCreds({...adminCreds, pw: e.target.value})} /></div>
+                                    <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 text-[11px] text-amber-700 leading-relaxed"><Icon name="AlertTriangle" className="inline w-3 h-3 mr-1" /> 관리자 정보를 변경하면 다음 로그인부터는 새로운 정보로 접속해야 합니다. 정보를 분실하지 않도록 주의하세요!</div>
                                 </div>
                             )}
                         </div>
-                        <div className="p-6 border-t bg-slate-50 flex gap-3">
-                            <button onClick={onClose} className="flex-1 py-3.5 bg-white border rounded-2xl text-sm font-black transition-all">취소</button>
-                            <button onClick={saveAll} className="flex-[2] py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-black hover:bg-slate-800 shadow-xl flex items-center justify-center gap-2 transition-all font-black"><Icon name="Save" /> 모든 설정 저장 및 반영</button>
+                        <div className="p-6 border-t bg-slate-50 flex gap-3 font-bold">
+                            <button onClick={onClose} className="flex-1 py-3.5 bg-white border rounded-2xl text-sm font-black transition-all">닫기</button>
+                            <button onClick={saveAll} className="flex-[2] py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-black hover:bg-slate-800 shadow-xl flex items-center justify-center gap-2 transition-all"><Icon name="Save" /> 모든 설정 저장 및 반영</button>
                         </div>
                     </div>
                 </div>
