@@ -1,0 +1,647 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  query, 
+  deleteDoc, 
+  doc, 
+  updateDoc,
+  setDoc,
+  getDoc,
+  getDocs,
+  where,
+  deleteField
+} from 'firebase/firestore';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  onAuthStateChanged, 
+  signInWithCustomToken 
+} from 'firebase/auth';
+import { 
+  Calendar as CalendarIcon, 
+  Plus, 
+  Trash2, 
+  ChevronLeft, 
+  ChevronRight, 
+  LayoutDashboard,
+  CalendarDays,
+  AlertCircle,
+  Printer,
+  Filter,
+  ArrowRight,
+  CheckSquare,
+  ExternalLink,
+  SortAsc,
+  Clock,
+  User as UserIcon,
+  RotateCcw,
+  X,
+  AlertTriangle,
+  Check,
+  Download,
+  FileSpreadsheet,
+  FileText as FileWord,
+  ChevronDown,
+  Settings,
+  Save,
+  Trash,
+  LogIn,
+  UserPlus,
+  LogOut,
+  Lock,
+  Key,
+  UserCheck,
+  RefreshCcw
+} from 'lucide-react';
+
+// --- Configuration ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'dalgeurak-tims-v6';
+
+// --- Constants & Themes ---
+const STATIC_STAFF_THEMES = {
+  "김대겸(팀장)": { accent: "#334155", bg: "#f8fafc", border: "#cbd5e1" },
+  "admin": { accent: "#7e22ce", bg: "#faf5ff", border: "#d8b4fe" },
+  "정이한": { accent: "#2563eb", bg: "#eff6ff", border: "#bfdbfe" },
+  "김소현": { accent: "#e11d48", bg: "#fff1f2", border: "#fecdd3" },
+  "김정훈": { accent: "#059669", bg: "#ecfdf5", border: "#a7f3d0" },
+  "김현아": { accent: "#d97706", bg: "#fffbeb", border: "#fde68a" }
+};
+
+const KR_HOLIDAYS_MAP = {
+  "2024-01-01": "신정", "2024-02-09": "설날", "2024-02-10": "설날", "2024-02-11": "설날", "2024-02-12": "대체공휴일", 
+  "2024-03-01": "삼일절", "2024-04-10": "선거일", "2024-05-01": "근로자의 날", "2024-05-05": "어린이날", "2024-05-06": "대체공휴일", 
+  "2024-05-15": "부처님오신날", "2024-06-06": "현충일", "2024-08-15": "광복절", "2024-09-16": "추석", "2024-09-17": "추석", 
+  "2024-09-18": "추석", "2024-10-03": "개천절", "2024-10-09": "한글날", "2024-12-25": "성탄절",
+  "2025-01-01": "신정", "2025-01-28": "설날", "2025-01-29": "설날", "2025-01-30": "설날", "2025-03-01": "삼일절", 
+  "2025-05-01": "근로자의 날", "2025-05-05": "어린이날", "2025-05-06": "부처님오신날", "2025-06-06": "현충일", "2025-08-15": "광복절", 
+  "2025-10-03": "개천절", "2025-10-05": "추석", "2025-10-06": "추석", "2025-10-07": "추석", "2025-10-08": "대체공휴일", "2025-10-09": "한글날", "2025-12-25": "성탄절",
+  "2026-01-01": "신정", "2026-02-16": "설날", "2026-02-17": "설날", "2026-02-18": "설날", "2026-03-01": "삼일절", 
+  "2026-03-02": "대체공휴일", "2026-05-01": "근로자의 날", "2026-05-05": "어린이날", "2026-05-24": "부처님오신날", 
+  "2026-05-25": "대체공휴일", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-09-24": "추석", "2026-09-25": "추석", 
+  "2026-09-26": "추석", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "성탄절"
+};
+
+const DEFAULT_CATEGORIES = {
+  PROGRAM: { label: "프로그램(사업)", milestones: [{ name: "계획서(기안서)", offset: -15, type: 'pre' }, { name: "평가서(결과보고서)", offset: 5, type: 'post' }] },
+  COMMITTEE: { label: "위원회", milestones: [{ name: "회의자료", offset: -15, type: 'pre' }, { name: "위원장 미팅", offset: -3, type: 'pre' }, { name: "회의록", offset: 1, type: 'post' }, { name: "추진일정", offset: 1, type: 'post' }] },
+  INTERNAL: { label: "내부회의", milestones: [{ name: "회의자료", offset: -5, type: 'pre' }, { name: "회의록", offset: 1, type: 'post' }] },
+  EXTERNAL: { label: "외부행사(장기사업)", milestones: [{ name: "계획서(기안서)", offset: -30, type: 'pre' }, { name: "평가서(결과보고서)", offset: 5, type: 'post' }] },
+  REFLECTION: { label: "성찰글", milestones: [] },
+  ETC: { label: "기타", milestones: [] }
+};
+
+const INITIAL_STAFF = ["김대겸(팀장)", "정이한", "김소현", "김정훈", "김현아"];
+
+// --- Utilities ---
+const getTodayStr = () => new Date().toISOString().split('T')[0];
+const getDayName = (date) => ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+
+const formatFullDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일(${getDayName(d)})`;
+};
+
+const isWorkDay = (date) => {
+  const dateStr = date.toISOString().split('T')[0];
+  const day = date.getDay();
+  if (day === 0 || day === 1) return false;
+  if (KR_HOLIDAYS_MAP[dateStr]) return false;
+  return true;
+};
+
+const adjustDate = (date, direction) => {
+  let adjusted = new Date(date);
+  while (!isWorkDay(adjusted)) {
+    adjusted.setDate(adjusted.getDate() + (direction === 'pre' ? -1 : 1));
+  }
+  return adjusted.toISOString().split('T')[0];
+};
+
+const getGoogleCalendarUrl = (title, dateStr, description) => {
+  const d = new Date(dateStr);
+  const start = d.toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 8);
+  const end = new Date(d.setDate(d.getDate() + 1)).toISOString().replace(/-|:|\.\d\d\d/g, "").slice(0, 8);
+  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(description)}`;
+};
+
+const getProjectHslColor = (title) => {
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 65%, 42%)`; // 가독성을 위해 명도/채도 고정
+};
+
+const getStaffTheme = (name) => {
+    if (STATIC_STAFF_THEMES[name]) return STATIC_STAFF_THEMES[name];
+    if (name === "관리자") return STATIC_STAFF_THEMES["admin"];
+    
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const h = Math.abs(hash) % 360;
+    return {
+        accent: `hsl(${h}, 70%, 45%)`,
+        bg: `hsl(${h}, 70%, 97%)`,
+        border: `hsl(${h}, 70%, 85%)`
+    };
+};
+
+// --- Auth Components ---
+const LoginScreen = ({ onLogin, staffList }) => {
+  const [isJoin, setIsJoin] = useState(false);
+  const [selectedName, setSelectedName] = useState('');
+  const [adminId, setAdminId] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (staffList.length > 0 && !selectedName) {
+      setSelectedName(staffList[0]);
+    }
+  }, [staffList]);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!isJoin && adminId === 'admin' && password === '0000') {
+      onLogin({ name: '관리자', id: 'admin', isAdmin: true });
+      return;
+    }
+
+    if (adminId === 'admin' && password !== '0000') {
+        setError('관리자 비밀번호가 틀립니다.');
+        return;
+    }
+
+    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', selectedName);
+    const userSnap = await getDoc(userRef);
+
+    if (isJoin) {
+      if (userSnap.exists() && userSnap.data().password) {
+        setError('이미 비밀번호가 설정된 실무자입니다. 로그인해주세요.');
+      } else {
+        await setDoc(userRef, { password, name: selectedName, isAdmin: selectedName.includes('팀장') }, { merge: true });
+        onLogin({ name: selectedName, id: selectedName, isAdmin: selectedName.includes('팀장') });
+      }
+    } else {
+      if (!userSnap.exists() || !userSnap.data().password) {
+        setError('설정된 비밀번호가 없습니다. 신규 설정을 먼저 해주세요.');
+      } else if (userSnap.data().password !== password) {
+        setError('비밀번호가 일치하지 않습니다.');
+      } else {
+        onLogin({ name: selectedName, id: selectedName, isAdmin: userSnap.data().isAdmin });
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900 flex items-center justify-center p-6 z-[200]">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden p-10 space-y-8 animate-in zoom-in-95 duration-300">
+        <div className="text-center space-y-2">
+          <div className="bg-blue-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-blue-200">
+            <Lock className="text-white w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black tracking-tight text-slate-800 text-center">청소년자치연구소 업무관리</h2>
+          <p className="text-slate-400 text-sm font-medium">{isJoin ? "실무진 신규 비밀번호 설정" : "로그인이 필요합니다."}</p>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">계정 유형</label>
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
+              <button type="button" onClick={() => { setIsJoin(false); setAdminId(''); }} className={`py-2.5 rounded-xl text-xs font-bold transition-all ${!isJoin && adminId !== 'admin' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500'}`}>실무자</button>
+              <button type="button" onClick={() => { setIsJoin(false); setAdminId('admin'); }} className={`py-2.5 rounded-xl text-xs font-bold transition-all ${adminId === 'admin' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-500'}`}>관리자(Admin)</button>
+            </div>
+          </div>
+
+          {adminId !== 'admin' ? (
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">이름 선택</label>
+              <select className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500" value={selectedName} onChange={(e) => setSelectedName(e.target.value)}>
+                {staffList.map(name => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">관리자 아이디</label>
+              <input type="text" disabled className="w-full p-4 bg-slate-100 border border-slate-200 rounded-2xl font-bold text-slate-400" value="admin" />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">비밀번호</label>
+            <input type="password" placeholder="비밀번호 입력" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+
+          {error && <p className="text-red-500 text-[11px] font-bold text-center animate-bounce">{error}</p>}
+
+          <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-xl flex items-center justify-center gap-2">
+            {isJoin ? <><UserPlus className="w-4 h-4" /> 신규 등록</> : <><LogIn className="w-4 h-4" /> 시스템 접속</>}
+          </button>
+
+          {adminId !== 'admin' && (
+            <button type="button" onClick={() => setIsJoin(!isJoin)} className="w-full text-center text-xs font-bold text-slate-400 hover:text-blue-500 transition-colors">
+              {isJoin ? "이미 가입하셨나요? 로그인하기" : "실무진 신규 비밀번호 설정"}
+            </button>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// --- Task Card Component ---
+const TaskCard = ({ prog, onDelete, onUpdateStatus, sortType, categories, currentUser }) => {
+  const staffTheme = getStaffTheme(prog.staffName);
+  const catLabel = categories[prog.categoryKey]?.label || "기타";
+  const today = getTodayStr();
+  const canEdit = currentUser.isAdmin || prog.creatorId === currentUser.id;
+
+  const displayItems = useMemo(() => {
+    const items = [
+      { name: "기준일 (D-Day)", date: prog.baseDate, isBase: true, completed: prog.baseCompleted || false, rejected: prog.baseRejected || false },
+      ...(prog.milestoneList || [])
+    ];
+    if (sortType === 'baseDate') return [items[0], ...items.slice(1).sort((a, b) => new Date(a.date) - new Date(b.date))];
+    else return items.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [prog, sortType]);
+
+  const earliestDate = useMemo(() => {
+    if (displayItems.length === 0) return null;
+    return displayItems.reduce((min, p) => new Date(p.date) < new Date(min.date) ? p : min, displayItems[0]).date;
+  }, [displayItems]);
+
+  const toggleStatus = (index, type) => {
+    if (!canEdit) return;
+    const newItems = [...displayItems];
+    const item = newItems[index];
+    if (type === 'completed') { item.completed = !item.completed; if (item.completed) item.rejected = false; }
+    else { item.rejected = !item.rejected; if (item.rejected) item.completed = false; }
+    const baseItem = newItems.find(it => it.isBase);
+    const milestones = newItems.filter(it => !it.isBase).map(({ name, date, completed, rejected }) => ({ name, date, completed: completed || false, rejected: rejected || false }));
+    onUpdateStatus(prog.id, { baseCompleted: baseItem.completed, baseRejected: baseItem.rejected, milestoneList: milestones });
+  };
+
+  return (
+    <div style={{ borderColor: staffTheme.border }} className="bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-all mb-4 group">
+      <div style={{ backgroundColor: staffTheme.bg }} className="px-5 py-3 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div style={{ backgroundColor: staffTheme.accent }} className="text-white px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+            <UserIcon className="w-3 h-3" />
+            {prog.staffName}
+          </div>
+          <span className="text-[10px] font-bold px-3 py-1 rounded-xl bg-white border border-slate-200 text-slate-500">{catLabel}</span>
+          <h4 className="font-bold text-slate-800 text-base tracking-tight">{prog.title}</h4>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <button onClick={() => window.open(getGoogleCalendarUrl(`[사업] ${prog.title}`, prog.baseDate, `담당: ${prog.staffName}`), '_blank')} className="bg-white text-slate-600 hover:text-blue-600 transition-all px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs flex items-center gap-2 font-bold"><ExternalLink className="w-3.5 h-3.5" /> 구글 캘린더 연동</button>
+          {canEdit && <button onClick={() => onDelete(prog)} className="text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100"><Trash2 className="w-4 h-4" /></button>}
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {displayItems.map((item, i) => {
+            const isUrgentSort = sortType === 'earliest';
+            const isHighlighted = isUrgentSort ? (item.date === earliestDate) : item.isBase;
+            const isOverdue = item.date < today && !item.completed;
+            
+            // 강조 영역 담당자 색상 적용
+            const cardStyle = isHighlighted && !item.completed ? {
+                backgroundColor: staffTheme.accent,
+                borderColor: staffTheme.accent,
+                color: 'white'
+            } : {};
+
+            return (
+              <div key={i} style={cardStyle} className={`p-3 rounded-xl border transition-all flex flex-col justify-center relative ${item.completed ? 'bg-slate-50 border-slate-200 opacity-75' : item.rejected ? 'bg-red-50 border-red-200' : isOverdue ? 'bg-rose-100 border-rose-300 ring-2 ring-rose-200' : !isHighlighted ? 'bg-white border-slate-100' : ''}`}>
+                <div className="flex justify-between items-start mb-1">
+                  <div className="flex items-center gap-1">
+                    <span className={`text-[9px] font-bold uppercase tracking-tight block ${isHighlighted && !item.completed ? 'text-white/70' : 'text-slate-400'}`}>{item.name}</span>
+                    {isOverdue && <AlertTriangle className="w-3 h-3 text-red-600 animate-pulse" />}
+                  </div>
+                  {!item.isBase && <button onClick={() => window.open(getGoogleCalendarUrl(`[${item.name}] ${prog.title}`, item.date, `사업: ${prog.title}`), '_blank')} className={`p-1 rounded-md transition-colors ${isHighlighted && !item.completed ? 'text-white/50 hover:text-white' : 'text-slate-300 hover:text-blue-500'}`}><CalendarIcon className="w-3 h-3" /></button>}
+                </div>
+                <div className={`text-lg font-black tracking-tight leading-none mb-3 ${item.completed ? 'line-through text-slate-400' : ''}`}>{formatFullDate(item.date)}</div>
+                <div className="flex items-center justify-between mt-auto pt-2 border-t border-black/5">
+                  <label className={`flex items-center gap-1.5 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group`}>
+                    <input type="checkbox" className="hidden" disabled={!canEdit} checked={item.completed || false} onChange={() => toggleStatus(i, 'completed')} />
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${item.completed ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-slate-300'}`}>{item.completed && <Check className="w-3 h-3 stroke-[4]" />}</div>
+                    <span className={`text-[10px] font-bold ${item.completed ? 'text-green-600' : (isHighlighted && !item.completed ? 'text-white/80' : 'text-slate-500')}`}>완료</span>
+                  </label>
+                  <label className={`flex items-center gap-1.5 ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'} group`}>
+                    <input type="checkbox" className="hidden" disabled={!canEdit} checked={item.rejected || false} onChange={() => toggleStatus(i, 'rejected')} />
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${item.rejected ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-slate-300'}`}>{item.rejected && <X className="w-3 h-3 stroke-[4]" />}</div>
+                    <span className={`text-[10px] font-bold ${item.rejected ? 'text-red-600' : (isHighlighted && !item.completed ? 'text-white/80' : 'text-slate-500')}`}>반려</span>
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Admin Settings Modal ---
+const AdminSettingsModal = ({ categories, staffList, onClose, onSaveCategories, onSaveStaff }) => {
+  const [activeTab, setActiveTab] = useState('categories');
+  const [catData, setCatData] = useState(JSON.parse(JSON.stringify(categories)));
+  const [staffData, setStaffData] = useState([...staffList]);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [userPasswords, setUserPasswords] = useState({});
+
+  useEffect(() => {
+    const fetchUserPasswords = async () => {
+      const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+      const snap = await getDocs(q);
+      const pwMap = {};
+      snap.forEach(doc => { pwMap[doc.id] = doc.data().password; });
+      setUserPasswords(pwMap);
+    };
+    if (activeTab === 'staff') fetchUserPasswords();
+  }, [activeTab]);
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+          <div className="flex items-center gap-3"><Settings className="w-5 h-5 text-slate-800" /><h3 className="font-black text-lg text-slate-800 uppercase tracking-tight">시스템 통합 관리자 설정</h3></div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+        <div className="flex border-b bg-white px-6">
+            <button onClick={() => setActiveTab('categories')} className={`py-4 px-6 text-sm font-bold transition-all border-b-2 ${activeTab === 'categories' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>업무 구분 관리</button>
+            <button onClick={() => setActiveTab('staff')} className={`py-4 px-6 text-sm font-bold transition-all border-b-2 ${activeTab === 'staff' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>실무자 계정 관리</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {activeTab === 'categories' ? (
+            <div className="space-y-6">
+              {Object.entries(catData).map(([key, cat]) => (
+                <div key={key} className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <input className="flex-1 bg-white border border-slate-200 p-2.5 rounded-xl font-bold text-sm" value={cat.label} onChange={(e) => setCatData({ ...catData, [key]: { ...cat, label: e.target.value } })} />
+                    <button onClick={() => { const d = {...catData}; delete d[key]; setCatData(d); }} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><Trash className="w-4 h-4" /></button>
+                  </div>
+                  <div className="space-y-2 pl-4 border-l-2 border-slate-200">
+                    {cat.milestones.map((m, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-100 shadow-xs">
+                        <input className="flex-1 text-xs font-bold border-none bg-slate-50 p-1.5 rounded-lg" value={m.name} onChange={(e) => { const d = {...catData}; d[key].milestones[idx].name = e.target.value; setCatData(d); }} />
+                        <div className="flex items-center gap-1 bg-slate-100 px-2 rounded-lg"><span className="text-[10px] font-bold text-slate-400">D</span><input type="number" className="w-10 text-xs font-bold bg-transparent text-center border-none" value={m.offset} onChange={(e) => { const d = {...catData}; d[key].milestones[idx].offset = parseInt(e.target.value); setCatData(d); }} /></div>
+                        <select className="text-[10px] font-bold bg-slate-100 p-1.5 rounded-lg border-none" value={m.type} onChange={(e) => { const d = {...catData}; d[key].milestones[idx].type = e.target.value; setCatData(d); }}><option value="pre">이전 평일</option><option value="post">이후 평일</option></select>
+                        <button onClick={() => { const d = {...catData}; d[key].milestones.splice(idx, 1); setCatData(d); }} className="p-1 text-slate-300 hover:text-rose-500"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => { const d = {...catData}; d[key].milestones.push({name:"신규유형", offset:-7, type:'pre'}); setCatData(d); }} className="text-[10px] font-black text-blue-600 hover:underline">+ 유형 추가</button>
+                  </div>
+                </div>
+              ))}
+              <button onClick={() => setCatData({...catData, [`CAT_${Date.now()}`]: {label: "신규 구분", milestones: []}})} className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-sm hover:bg-slate-50 transition-colors">+ 새로운 업무 구분 추가</button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+                <div className="flex gap-2 bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-6">
+                    <input className="flex-1 bg-white border border-slate-200 p-3 rounded-xl font-bold text-sm outline-none" placeholder="실무자 이름 입력" value={newStaffName} onChange={(e) => setNewStaffName(e.target.value)} />
+                    <button onClick={() => {if(newStaffName && !staffData.includes(newStaffName)) {setStaffData([...staffData, newStaffName]); setNewStaffName('');}}} className="px-6 bg-blue-600 text-white font-bold rounded-xl text-sm">추가</button>
+                </div>
+                {staffData.map(name => (
+                    <div key={name} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-xs group">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-slate-100 p-2 rounded-xl"><UserIcon className="w-4 h-4 text-slate-500" /></div>
+                            <div>
+                                <p className="font-bold text-slate-800">{name}</p>
+                                <div className="flex items-center gap-2">
+                                    {userPasswords[name] ? <span className="text-[10px] font-bold text-blue-600"><Key className="w-3 h-3 inline" /> PW: {userPasswords[name]}</span> : <span className="text-[10px] font-bold text-slate-300">미가입</span>}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={async () => {if(window.confirm('초기화하시겠습니까?')){await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', name), {password:deleteField()}); setUserPasswords({...userPasswords, [name]:null});}}} className="text-amber-600 p-2 hover:bg-amber-50 rounded-xl"><RefreshCcw className="w-4 h-4" /></button>
+                            <button onClick={() => {if(window.confirm('삭제하시겠습니까?')){setStaffData(staffData.filter(s=>s!==name));}}} className="text-rose-500 p-2 hover:bg-rose-50 rounded-xl"><Trash className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+          )}
+        </div>
+        <div className="p-6 border-t bg-slate-50 flex gap-3">
+          <button onClick={onClose} className="flex-1 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-100">취소</button>
+          <button onClick={() => { onSaveCategories(catData); onSaveStaff(staffData); onClose(); }} className="flex-[2] py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 flex items-center justify-center gap-2"><Save className="w-4 h-4" /> 모든 설정 저장 및 반영</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Main App Component ---
+export default function App() {
+  const [user, setUser] = useState(null); 
+  const [currentUser, setCurrentUser] = useState(null); 
+  const [programs, setPrograms] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [staffList, setStaffList] = useState(INITIAL_STAFF);
+  const [viewMode, setViewMode] = useState('list');
+  const [isLoading, setIsLoading] = useState(true);
+  const [filterStaff, setFilterStaff] = useState('전체');
+  const [sortType, setSortType] = useState('baseDate'); 
+  const [lastDeleted, setLastDeleted] = useState(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const [currMonth, setCurrMonth] = useState(new Date()); 
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const exportMenuRef = useRef(null);
+  
+  const [form, setForm] = useState({ title: '', staffName: '', categoryKey: 'PROGRAM', baseDate: '' });
+
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+      else await signInAnonymously(auth);
+    };
+    initAuth();
+    onAuthStateChanged(auth, (u) => setUser(u));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'categories'), (docSnap) => {
+      if (docSnap.exists()) setCategories(docSnap.data().data);
+      else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'categories'), { data: DEFAULT_CATEGORIES });
+    });
+    onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'staff'), (docSnap) => {
+      if (docSnap.exists()) setStaffList(docSnap.data().list);
+      else setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'staff'), { list: INITIAL_STAFF });
+    });
+    onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'programs')), (snapshot) => {
+      setPrograms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      setIsLoading(false);
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (currentUser && currentUser.id !== 'admin') setForm(prev => ({ ...prev, staffName: currentUser.name }));
+  }, [currentUser]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => { if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) setIsExportOpen(false); };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const sortedPrograms = useMemo(() => {
+    let result = filterStaff === '전체' ? [...programs] : programs.filter(p => p.staffName === filterStaff);
+    if (sortType === 'baseDate') return result.sort((a, b) => new Date(a.baseDate) - new Date(b.baseDate));
+    else return result.sort((a, b) => new Date(a.earliestDate) - new Date(b.earliestDate));
+  }, [programs, filterStaff, sortType]);
+
+  if (!currentUser) return <LoginScreen onLogin={setCurrentUser} staffList={staffList} />;
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 selection:bg-blue-100">
+      <header className="bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-600 p-2 rounded-xl shadow-md"><CheckSquare className="w-5 h-5 text-white" /></div>
+          <div>
+            <h1 className="font-bold text-lg tracking-tight leading-none text-slate-800 uppercase">DALGEURAK TIMS</h1>
+            <div className="flex items-center gap-2 mt-0.5"><span className="text-[10px] text-slate-400 font-bold">청소년자치연구소</span><div className="h-1 w-1 bg-slate-200 rounded-full"></div><span className={`text-[10px] font-black ${currentUser.isAdmin ? 'text-purple-600' : 'text-blue-600'}`}>{currentUser.name} 접속 중</span></div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200 mr-2">
+            <button onClick={() => setViewMode('list')} className={`px-6 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>리스트</button>
+            <button onClick={() => setViewMode('calendar')} className={`px-6 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>캘린더</button>
+          </div>
+          {currentUser.isAdmin && <button onClick={() => setIsAdminOpen(true)} className="p-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 shadow-sm"><Settings className="w-4 h-4" /></button>}
+          <button onClick={() => setCurrentUser(null)} className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all shadow-sm"><LogOut className="w-4 h-4" /></button>
+        </div>
+      </header>
+      
+      <main className="max-w-6xl mx-auto p-4 md:p-6">
+        <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+          <h2 className="text-lg font-bold mb-5 text-slate-800 flex items-center gap-2"><Plus className="w-5 h-5 text-blue-600" /> 신규 일정 등록</h2>
+          <form onSubmit={async (e) => {
+              e.preventDefault(); if (!form.title || !form.baseDate) return;
+              const cat = categories[form.categoryKey] || { milestones: [] };
+              const base = new Date(form.baseDate);
+              const milestoneList = cat.milestones.map(m => {
+                  const target = new Date(base); target.setDate(base.getDate() + m.offset);
+                  return { name: m.name, date: adjustDate(target, m.type), completed: false, rejected: false };
+              });
+              const allDates = [new Date(form.baseDate), ...milestoneList.map(m => new Date(m.date))];
+              const earliestDate = new Date(Math.min(...allDates)).toISOString();
+              await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'programs'), {...form, staffName: currentUser.isAdmin ? (form.staffName || "관리자") : currentUser.name, milestoneList, earliestDate, baseCompleted: false, baseRejected: false, createdAt: new Date().toISOString(), creatorId: currentUser.id});
+              setForm({ ...form, title: '', baseDate: '' });
+          }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 items-end text-xs font-bold">
+            <div className="lg:col-span-2 space-y-1"><label className="text-[9px] text-slate-400 ml-1">구분</label><select className="w-full p-2.5 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-blue-500" value={form.categoryKey} onChange={(e) => setForm({...form, categoryKey: e.target.value})}>{Object.entries(categories).map(([key, val]) => <option key={key} value={key}>{val.label}</option>)}</select></div>
+            <div className="lg:col-span-5 space-y-1"><label className="text-[9px] text-slate-400 ml-1">업무명</label><input type="text" placeholder="사업명을 입력하세요" className="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 bg-slate-50" value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required /></div>
+            <div className="lg:col-span-3 space-y-1"><label className="text-[9px] text-slate-400 ml-1">기준일</label><input type="date" className="w-full p-2.5 border rounded-xl bg-slate-50" value={form.baseDate} onChange={(e) => setForm({...form, baseDate: e.target.value})} required /></div>
+            {currentUser.isAdmin && <div className="lg:col-span-2 space-y-1"><label className="text-[9px] text-slate-400 ml-1">담당자</label><select className="w-full p-2.5 border rounded-xl bg-white shadow-xs" value={form.staffName} onChange={(e) => setForm({...form, staffName: e.target.value})}>{staffList.map(name => <option key={name} value={name}>{name}</option>)}</select></div>}
+            <div className={currentUser.isAdmin ? "lg:col-span-12" : "lg:col-span-2"}><button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 rounded-xl transition shadow-md">일정 생성</button></div>
+          </form>
+        </section>
+
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="bg-white p-2 rounded-lg border border-slate-200"><Filter className="w-3.5 h-3.5 text-slate-400" /></div>
+              {["전체", ...staffList].map(name => (
+                <button key={name} onClick={() => setFilterStaff(name)} className={`px-4 py-1.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap border ${filterStaff === name ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}>{name}</button>
+              ))}
+            </div>
+            <div className="relative" ref={exportMenuRef}>
+              <button onClick={() => setIsExportOpen(!isExportOpen)} className={`bg-slate-800 text-white px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2 hover:bg-slate-700 transition shadow-sm ${isExportOpen ? 'ring-2 ring-blue-500 bg-slate-900' : ''}`}><Download className="w-3.5 h-3.5" /> 내보내기 <ChevronDown className={`w-3 h-3 transition-transform ${isExportOpen ? 'rotate-180' : ''}`} /></button>
+              {isExportOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-2xl border p-2 z-[60] animate-in fade-in zoom-in-95 text-[11px] font-bold">
+                  <div className="p-2 text-[10px] text-slate-400 border-b mb-1 uppercase">데이터 추출</div>
+                  <button onClick={() => exportToExcel(false)} className="w-full text-left p-2.5 hover:bg-emerald-50 rounded-xl flex items-center gap-2"><FileSpreadsheet className="w-4 h-4 text-emerald-500" /> 전체 일정 (Excel)</button>
+                  <button onClick={() => exportToWord(false)} className="w-full text-left p-2.5 hover:bg-blue-50 rounded-xl flex items-center gap-2"><FileWord className="w-4 h-4 text-blue-500" /> 전체 보고서 (Word)</button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-xs w-fit">
+            <button onClick={() => setSortType('baseDate')} className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all ${sortType === 'baseDate' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><SortAsc className="w-3 h-3" /> 기준일순</button>
+            <button onClick={() => setSortType('earliest')} className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all ${sortType === 'earliest' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}><Clock className="w-3 h-3" /> 마감임박순</button>
+          </div>
+        </div>
+
+        {isLoading ? <div className="flex justify-center py-40 animate-spin"><RotateCcw className="w-10 h-10 text-slate-300" /></div> : viewMode === 'list' ? (
+          <div className="grid grid-cols-1 gap-3">
+            {sortedPrograms.length === 0 ? <div className="text-center py-40 bg-white rounded-2xl border border-dashed border-slate-200 font-bold text-slate-300 uppercase">일정이 없습니다.</div> :
+              sortedPrograms.map(prog => <TaskCard key={prog.id} prog={prog} sortType={sortType} onDelete={async (p) => {if(window.confirm('삭제하시겠습니까?')){setLastDeleted(p); setShowUndo(true); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', p.id)); setTimeout(() => setShowUndo(false), 10000);}}} onUpdateStatus={async (id, updates) => await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'programs', id), updates)} categories={categories} currentUser={currentUser} />)}
+          </div>
+        ) : <CalendarView programs={sortedPrograms} currMonth={currMonth} setCurrMonth={setCurrMonth} />}
+      </main>
+
+      {isAdminOpen && <AdminSettingsModal categories={categories} staffList={staffList} onClose={() => setIsAdminOpen(false)} onSaveCategories={(data) => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'categories'), { data })} onSaveStaff={(list) => setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'staff'), { list })} />}
+      {showUndo && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4 animate-in slide-in-from-bottom-4"><div className="bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between border border-white/10"><div className="flex items-center gap-3"><Trash2 className="w-4 h-4 text-red-500" /><p className="text-xs font-bold">일정 삭제됨 (10초내 복구가능)</p></div><button onClick={async () => {if(lastDeleted) {const {id, ...d} = lastDeleted; await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'programs'), d); setLastDeleted(null); setShowUndo(false);}}} className="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md"><RotateCcw className="w-3.5 h-3.5" /> 복구</button></div></div>}
+    </div>
+  );
+}
+
+// --- Calendar View ---
+const CalendarView = ({ programs, currMonth, setCurrMonth }) => {
+  const year = currMonth.getFullYear();
+  const month = currMonth.getMonth();
+  const todayStr = getTodayStr();
+  const days = [...Array(new Date(year, month, 1).getDay()).fill(null), ...Array.from({length: new Date(year, month + 1, 0).getDate()}, (_, i) => i + 1)];
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="p-5 border-b flex justify-between items-center bg-slate-900 text-white">
+        <h2 className="font-bold text-base">{year}년 {month + 1}월</h2>
+        <div className="flex gap-2">
+          <button onClick={() => setCurrMonth(new Date(year, month - 1))} className="p-1.5 hover:bg-slate-800 rounded-xl transition-all border border-slate-700"><ChevronLeft className="w-5 h-5"/></button>
+          <button onClick={() => setCurrMonth(new Date())} className="px-4 text-[9px] font-bold uppercase tracking-widest text-slate-400 hover:text-white">TODAY</button>
+          <button onClick={() => setCurrMonth(new Date(year, month + 1))} className="p-1.5 hover:bg-slate-800 rounded-xl transition-all border border-slate-700"><ChevronRight className="w-5 h-5"/></button>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 border-b bg-slate-50 text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center py-3">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d}>{d}</div>)}</div>
+      <div className="grid grid-cols-7 min-h-[500px]">
+        {days.map((day, idx) => {
+          const dateStr = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
+          const holidayName = KR_HOLIDAYS_MAP[dateStr];
+          const isToday = dateStr === todayStr;
+          
+          const events = [];
+          programs.forEach(p => {
+              const projectColor = getProjectHslColor(p.title);
+              if (p.baseDate === dateStr) events.push({ type: 'D-Day', title: p.title, color: projectColor, staff: p.staffName, completed: p.baseCompleted, date: p.baseDate });
+              p.milestoneList && p.milestoneList.forEach(m => {
+                  if (m.date === dateStr) events.push({ type: m.name.split('(')[0], title: p.title, color: projectColor, staff: p.staffName, completed: m.completed, date: m.date });
+              });
+          });
+
+          return (
+            <div key={idx} className={`border-r border-b p-2 overflow-y-auto min-h-[110px] border-slate-100 relative ${day ? (holidayName || idx % 7 === 0 || idx % 7 === 1 ? 'bg-red-50/30' : 'bg-white') : 'bg-slate-50/20'} ${isToday ? 'ring-2 ring-red-500 ring-inset z-10' : ''}`}>
+              {day && (
+                <>
+                  <div className="mb-1 flex justify-between items-start">
+                    <div className="flex flex-col"><span className={`text-sm font-bold ${idx % 7 === 0 || holidayName ? 'text-red-600' : idx % 7 === 1 ? 'text-slate-400' : idx % 7 === 6 ? 'text-blue-500' : 'text-slate-800'}`}>{day}</span>{holidayName && <span className="text-[8px] font-bold text-red-500 leading-tight mt-0.5">{holidayName}</span>}</div>
+                    {isToday && <span className="text-[7px] font-black text-red-600 bg-red-100 px-1 rounded uppercase">Today</span>}
+                  </div>
+                  <div className="space-y-1 mt-1">
+                    {events.map((ev, i) => (
+                      <div key={i} style={{ backgroundColor: ev.completed ? '#e2e8f0' : ev.color, color: ev.completed ? '#64748b' : 'white' }} className={`text-[7px] p-1 rounded-md leading-tight shadow-sm border border-white/10 relative ${ev.completed ? 'line-through' : ''} ${ev.date < todayStr && !ev.completed ? 'ring-1 ring-red-500 animate-pulse' : ''}`}>
+                        <div className="font-bold opacity-80 flex justify-between items-center gap-1"><span className="truncate">[{ev.type}] {ev.staff}</span>{ev.date < todayStr && !ev.completed && <AlertTriangle className="w-2 h-2 text-red-600 fill-white" />}{ev.completed && <Check className="w-2 h-2" />}</div>
+                        <div className="truncate font-medium">{ev.title}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
