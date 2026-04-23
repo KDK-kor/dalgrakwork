@@ -518,11 +518,11 @@
             return (
                 <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4 z-[300] animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl flex flex-col max-h-[85vh] overflow-hidden font-bold">
-                        <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                        <div className="p-6 border-b flex justify-between items-center bg-slate-50 font-black shrink-0">
                             <h3 className="font-black text-xl tracking-tight text-slate-800 uppercase tracking-widest">관리자 설정 모드</h3>
                             <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><Icon name="X" /></button>
                         </div>
-                        <div className="flex border-b bg-white px-6 font-bold overflow-x-auto scrollbar-hide">
+                        <div className="flex border-b bg-white px-6 font-bold overflow-x-auto scrollbar-hide shrink-0">
                             <button onClick={() => setActiveTab('logs')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'logs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>작업 기록 (타임라인)</button>
                             <button onClick={() => setActiveTab('categories')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'categories' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>업무 구분 관리</button>
                             <button onClick={() => setActiveTab('staff')} className={`py-4 px-6 text-sm transition-all border-b-4 shrink-0 ${activeTab === 'staff' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400'}`}>실무자 계정 관리</button>
